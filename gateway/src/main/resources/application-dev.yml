@@ -1,0 +1,49 @@
+server:
+  port: 8888
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        # 代码生成器服务路由
+        - id: code-generator
+          uri: lb://code-generator
+          predicates:
+            - Path=/api/generator/**
+          filters:
+            - StripPrefix=1
+        # 用户服务路由
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/user/**
+          filters:
+            - StripPrefix=1
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+        namespace: public
+        group: DEFAULT_GROUP
+        # 启用失败容忍，允许 Nacos 不可用时继续启动
+        failure-tolerance-enabled: true
+        # 注册失败时是否快速失败（false 表示不快速失败，允许继续启动）
+        fail-fast: false
+      config:
+        server-addr: localhost:8848
+        namespace: public
+        group: DEFAULT_GROUP
+        file-extension: yml
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    org.example: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n"
+

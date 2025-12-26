@@ -1,0 +1,59 @@
+server:
+  port: 8082
+
+spring:
+  # 数据源配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/clouddata?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+        namespace: public
+        group: DEFAULT_GROUP
+        # 启用失败容忍，允许 Nacos 不可用时继续启动
+        failure-tolerance-enabled: true
+        # 注册失败时是否快速失败（false 表示不快速失败，允许继续启动）
+        fail-fast: false
+      config:
+        server-addr: localhost:8848
+        namespace: public
+        group: DEFAULT_GROUP
+        file-extension: yml
+        shared-configs:
+          - data-id: common-config.yml
+            group: DEFAULT_GROUP
+            refresh: true
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  configuration:
+    # 开启驼峰命名转换
+    map-underscore-to-camel-case: true
+    # SQL 日志打印
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      # 主键生成策略：AUTO（数据库自增）
+      id-type: auto
+      # 逻辑删除字段
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  # Mapper XML 文件位置
+  mapper-locations: classpath:mapper/**/*.xml
+  # 实体类包路径
+  type-aliases-package: org.example.userservice.entity
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    org.example: DEBUG
+    org.example.userservice.mapper: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n"
+

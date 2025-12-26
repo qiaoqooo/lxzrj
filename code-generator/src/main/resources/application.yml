@@ -1,0 +1,76 @@
+server:
+  port: 8081
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: code-generator
+  config:
+    import: optional:nacos:code-generator.yml
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+        namespace: public
+        group: DEFAULT_GROUP
+        # 启用失败容忍，允许 Nacos 不可用时继续启动
+        failure-tolerance-enabled: true
+        # 注册失败时是否快速失败（false 表示不快速失败，允许继续启动）
+        fail-fast: false
+      config:
+        server-addr: localhost:8848
+        namespace: public
+        group: DEFAULT_GROUP
+        file-extension: yml
+        import-check:
+          enabled: false
+        shared-configs:
+          - data-id: common-config.yml
+            group: DEFAULT_GROUP
+            refresh: true
+
+# 代码生成器配置
+code:
+  generator:
+    # 数据源配置
+    datasource:
+      url: jdbc:mysql://localhost:3306/clouddata?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+      username: root
+      password: root
+      driver-class-name: com.mysql.cj.jdbc.Driver
+    # 作者
+    author: code-generator
+    # 父包名
+    package:
+      parent: org.example
+    # 输出目录
+    output:
+      dir: src/main/java
+    # 是否启用交互式生成（启动时自动运行）
+    enabled: false
+    # 默认要生成的表名（多个用逗号分隔，为空则通过API或交互式输入）
+    tables: user
+    # 默认模块名
+    default-module: user
+
+# MyBatis-Plus 配置（如果需要）
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    org.example: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n"
+

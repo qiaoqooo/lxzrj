@@ -9,13 +9,6 @@ spring:
           enabled: true
           lower-case-service-id: true
       routes:
-        # 代码生成器服务路由
-        - id: code-generator
-          uri: lb://code-generator
-          predicates:
-            - Path=/api/generator/**
-          filters:
-            - StripPrefix=1
         # 用户服务路由
         - id: user-service
           uri: lb://user-service

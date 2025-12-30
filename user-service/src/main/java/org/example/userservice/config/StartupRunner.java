@@ -1,5 +1,7 @@
 package org.example.userservice.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -13,6 +15,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class StartupRunner implements ApplicationListener<ApplicationReadyEvent> {
 
+    private static final Logger logger = LoggerFactory.getLogger(StartupRunner.class);
+
     @Value("${server.port:8080}")
     private String port;
 
@@ -21,16 +25,16 @@ public class StartupRunner implements ApplicationListener<ApplicationReadyEvent>
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        System.out.println();
-        System.out.println("╔══════════════════════════════════════════════════════════════╗");
-        System.out.println("║                                                              ║");
-        System.out.println("║            " + applicationName.toUpperCase() + " 启动成功！                    ║");
-        System.out.println("║                                                              ║");
-        System.out.println("║  服务地址: http://192.168.1.111:" + port + "                              ║");
-        System.out.println("║  服务名称: " + applicationName + "                                    ║");
-        System.out.println("║                                                              ║");
-        System.out.println("╚══════════════════════════════════════════════════════════════╝");
-        System.out.println();
+        logger.info("");
+        logger.info("╔══════════════════════════════════════════════════════════════╗");
+        logger.info("║                                                              ║");
+        logger.info("║            {} 启动成功！                    ║", applicationName.toUpperCase());
+        logger.info("║                                                              ║");
+        logger.info("║  服务地址: http://192.168.1.111:{}                              ║", port);
+        logger.info("║  服务名称: {}                                    ║", applicationName);
+        logger.info("║                                                              ║");
+        logger.info("╚══════════════════════════════════════════════════════════════╝");
+        logger.info("");
     }
 }
 

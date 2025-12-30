@@ -12,6 +12,13 @@ import java.time.format.DateTimeFormatter;
  */
 public class CodeGenerator {
 
+    /**
+     * 私有构造函数，防止实例化
+     */
+    private CodeGenerator() {
+        throw new UnsupportedOperationException("工具类不允许实例化");
+    }
+
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     /**

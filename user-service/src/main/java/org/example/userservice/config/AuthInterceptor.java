@@ -18,37 +18,44 @@ import javax.servlet.http.HttpServletResponse;
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
 
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String TOKEN_PARAM = "token";
+    private static final String BEARER_PREFIX = "Bearer ";
+    private static final String CONTENT_TYPE_JSON = "application/json;charset=UTF-8";
+    private static final String ERROR_UNAUTHORIZED = "{\"code\":401,\"message\":\"未授权，请先登录\"}";
+    private static final String ERROR_TOKEN_INVALID = "{\"code\":401,\"message\":\"Token 无效或已过期\"}";
+
     @Autowired
     private JwtUtil jwtUtil;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // 获取 Token（从 Header 中获取）
-        String token = request.getHeader("Authorization");
+        String token = request.getHeader(AUTHORIZATION_HEADER);
         
         // 如果没有 Token，尝试从请求参数中获取
         if (token == null || token.isEmpty()) {
-            token = request.getParameter("token");
+            token = request.getParameter(TOKEN_PARAM);
         }
         
         // 如果还是没有 Token，返回未授权
         if (token == null || token.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"code\":401,\"message\":\"未授权，请先登录\"}");
+            response.setContentType(CONTENT_TYPE_JSON);
+            response.getWriter().write(ERROR_UNAUTHORIZED);
             return false;
         }
 
         // 移除 "Bearer " 前缀（如果存在）
-        if (token.startsWith("Bearer ")) {
-            token = token.substring(7);
+        if (token.startsWith(BEARER_PREFIX)) {
+            token = token.substring(BEARER_PREFIX.length());
         }
 
         // 验证 Token
         if (!jwtUtil.validateToken(token)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"code\":401,\"message\":\"Token 无效或已过期\"}");
+            response.setContentType(CONTENT_TYPE_JSON);
+            response.getWriter().write(ERROR_TOKEN_INVALID);
             return false;
         }
 

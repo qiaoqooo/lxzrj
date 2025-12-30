@@ -132,7 +132,7 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
 
         try {
             // 验证表名安全性（只允许字母、数字、下划线）
-            if (!tableName.matches("^[a-zA-Z_][a-zA-Z0-9_]*$")) {
+            if (tableName == null || !tableName.matches("^[a-zA-Z_][a-zA-Z0-9_]*$")) {
                 return 0; // 表名不合法，返回0
             }
 
@@ -155,6 +155,7 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
             return maxSeq != null ? maxSeq : 0;
         } catch (Exception e) {
             // 查询失败，返回0（从1开始）
+            // 记录日志以便调试（可选）
             return 0;
         }
     }

@@ -28,10 +28,10 @@ public class StartupRunner implements ApplicationListener<ApplicationReadyEvent>
         logger.info("");
         logger.info("╔══════════════════════════════════════════════════════════════╗");
         logger.info("║                                                              ║");
-        logger.info("║            {} 启动成功！                    ║", applicationName.toUpperCase());
+        logger.info("║            {}　启动成功！                       　　　║", applicationName.toUpperCase());
         logger.info("║                                                              ║");
-        logger.info("║  服务地址: http://192.168.1.111:{}                              ║", port);
-        logger.info("║  服务名称: {}                                    ║", applicationName);
+        logger.info("║  服务地址: http://192.168.1.111:{}                         　║", port);
+        logger.info("║  服务名称: {}                                 　　　　║", applicationName);
         logger.info("║                                                              ║");
         logger.info("╚══════════════════════════════════════════════════════════════╝");
         logger.info("");

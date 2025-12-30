@@ -53,6 +53,33 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
                 this.strictInsertFill(metaObject, "code", String.class, code);
             }
         }
+
+        // 初始化 version（乐观锁字段，如果为 null 则初始化为 1）
+        if (hasField(metaObject, "version")) {
+            try {
+                Object version = metaObject.getValue("version");
+                if (version == null) {
+                    this.strictInsertFill(metaObject, "version", Long.class, 1L);
+                }
+            } catch (Exception e) {
+                // 如果获取失败，尝试填充默认值
+                this.strictInsertFill(metaObject, "version", Long.class, 1L);
+            }
+        }
+
+        // 初始化 delFlag（删除标记，如果为 null 则初始化为 false，对应数据库的 0）
+        if (hasField(metaObject, "delFlag")) {
+            try {
+                Object delFlag = metaObject.getValue("delFlag");
+                if (delFlag == null) {
+                    // false 对应数据库的 0（正常），true 对应数据库的 1（删除）
+                    this.strictInsertFill(metaObject, "delFlag", Boolean.class, false);
+                }
+            } catch (Exception e) {
+                // 如果获取失败，尝试填充默认值（false = 0，表示正常）
+                this.strictInsertFill(metaObject, "delFlag", Boolean.class, false);
+            }
+        }
     }
 
     /**

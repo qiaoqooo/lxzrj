@@ -1,6 +1,7 @@
 package org.example.userservice.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import org.example.common.util.JwtUtil;
 import org.example.userservice.dto.LoginRequest;
 import org.example.userservice.dto.LoginResponse;
@@ -67,19 +68,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             this.save(user);
         } else {
             // 4. 用户已存在，更新登录信息
-            user.setSessionKey(sessionKey); // 更新 session_key
-            user.setLastLoginTime(LocalDateTime.now());
+            // 使用 UpdateWrapper 更新，避免乐观锁问题
+            LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.eq(User::getId, user.getId())
+                    .set(User::getSessionKey, sessionKey)
+                    .set(User::getLastLoginTime, LocalDateTime.now());
             
             // 如果传入了新的昵称或头像，更新
             if (request.getNickName() != null && !request.getNickName().isEmpty()) {
-                user.setNickName(request.getNickName());
+                updateWrapper.set(User::getNickName, request.getNickName());
             }
             if (request.getAvatarUrl() != null && !request.getAvatarUrl().isEmpty()) {
-                user.setAvatarUrl(request.getAvatarUrl());
+                updateWrapper.set(User::getAvatarUrl, request.getAvatarUrl());
             }
             
-            // 更新用户
-            this.updateById(user);
+            // 执行更新
+            this.update(updateWrapper);
+            
+            // 重新查询用户信息（包含更新后的字段和最新的 version）
+            user = this.getById(user.getId());
         }
 
         // 5. 生成 JWT Token

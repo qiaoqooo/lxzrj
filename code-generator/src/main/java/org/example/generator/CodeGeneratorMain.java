@@ -122,20 +122,21 @@ public class CodeGeneratorMain {
                             .addTablePrefix("t_", "c_"); // 设置过滤表前缀
                 })
                 .strategyConfig(builder -> {
-                    var entityBuilder = builder.entityBuilder()
+                    // 构建基础配置
+                    builder.entityBuilder()
                             .enableLombok() // 启用Lombok（使用@Data注解）
                             .enableFileOverride(); // 覆盖已生成文件
                     
                     // 如果指定了基类，设置继承
                     if (finalSuperEntityClass != null) {
-                        entityBuilder.superClass(finalSuperEntityClass);
+                        builder.entityBuilder().superClass(finalSuperEntityClass);
                     }
                     // 如果不设置 superClass，生成的类将不写 extends 语句（默认实现 Serializable）
                     
                     // 根据基类类型设置不同的自动填充字段
                     if (finalSuperEntityClass != null && finalSuperEntityClass.contains("ComplexEntity")) {
                         // ComplexEntity 包含 code 字段，需要自动填充
-                        entityBuilder.addTableFills(
+                        builder.entityBuilder().addTableFills(
                                 new Column("create_time", FieldFill.INSERT),
                                 new Column("create_by", FieldFill.INSERT),
                                 new Column("update_time", FieldFill.INSERT_UPDATE),
@@ -144,7 +145,7 @@ public class CodeGeneratorMain {
                         );
                     } else if (finalSuperEntityClass != null && finalSuperEntityClass.contains("BaseEntity")) {
                         // BaseEntity 不包含 code 字段
-                        entityBuilder.addTableFills(
+                        builder.entityBuilder().addTableFills(
                                 new Column("create_time", FieldFill.INSERT),
                                 new Column("create_by", FieldFill.INSERT),
                                 new Column("update_time", FieldFill.INSERT_UPDATE),
@@ -152,7 +153,7 @@ public class CodeGeneratorMain {
                         );
                     } else {
                         // 不继承基类时，仍然可以设置自动填充（如果表中有这些字段）
-                        entityBuilder.addTableFills(
+                        builder.entityBuilder().addTableFills(
                                 new Column("create_time", FieldFill.INSERT),
                                 new Column("create_by", FieldFill.INSERT),
                                 new Column("update_time", FieldFill.INSERT_UPDATE),

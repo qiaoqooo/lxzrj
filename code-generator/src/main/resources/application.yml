@@ -8,27 +8,6 @@ spring:
     name: code-generator
   config:
     import: optional:nacos:code-generator.yml
-  cloud:
-    nacos:
-      discovery:
-        server-addr: localhost:8848
-        namespace: public
-        group: DEFAULT_GROUP
-        # 启用失败容忍，允许 Nacos 不可用时继续启动
-        failure-tolerance-enabled: true
-        # 注册失败时是否快速失败（false 表示不快速失败，允许继续启动）
-        fail-fast: false
-      config:
-        server-addr: localhost:8848
-        namespace: public
-        group: DEFAULT_GROUP
-        file-extension: yml
-        import-check:
-          enabled: false
-        shared-configs:
-          - data-id: common-config.yml
-            group: DEFAULT_GROUP
-            refresh: true
 
 # 代码生成器配置
 code:
@@ -40,7 +19,7 @@ code:
       password: root
       driver-class-name: com.mysql.cj.jdbc.Driver
     # 作者
-    author: code-generator
+    author: 小熊敲敲
     # 父包名
     package:
       parent: org.example

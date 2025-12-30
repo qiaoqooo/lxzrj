@@ -1,43 +1,38 @@
 package org.example.userservice.entity;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import java.io.Serializable;
-import java.time.LocalDateTime;
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.example.common.entity.ComplexEntity;
+
+import java.time.LocalDateTime;
 
 /**
  * <p>
  * 小程序用户表
  * </p>
  *
- * @author code-generator
+ * @author 小熊敲敲
  * @since 2025-12-26
  */
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = true)
+@TableName("user")
 @ApiModel(value = "User对象", description = "小程序用户表")
-public class User implements Serializable {
+public class User extends ComplexEntity {
 
     private static final long serialVersionUID = 1L;
 
-    @ApiModelProperty("用户主键ID")
-    @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
-
     @ApiModelProperty("微信小程序openid")
-    private String openid;
+    private String openId;
 
     @ApiModelProperty("微信开放平台unionid")
-    private String unionid;
+    private String unionId;
 
     @ApiModelProperty("用户昵称")
-    private String nickname;
+    private String nickName;
 
     @ApiModelProperty("用户头像URL")
     private String avatarUrl;
@@ -69,21 +64,7 @@ public class User implements Serializable {
     @ApiModelProperty("最后登录时间")
     private LocalDateTime lastLoginTime;
 
-    @ApiModelProperty("删除标记：0-正常，1-删除（逻辑删除）")
-    private Boolean delFlag;
-
-    @ApiModelProperty("版本号（乐观锁）")
-    private Long version;
-
-    @ApiModelProperty("备注")
-    private String remark;
-
-    @ApiModelProperty("创建时间")
-    @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
-
-    @ApiModelProperty("更新时间")
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
+    @ApiModelProperty("白名单")
+    private Boolean isIgnore;
 }
 

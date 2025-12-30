@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.example.common.util.CodeGenerator;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
@@ -30,15 +31,17 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
      */
     @Override
     public void insertFill(MetaObject metaObject) {
+        LocalDateTime now = LocalDateTime.now();
+        
         // 自动填充创建时间
-        this.strictInsertFill(metaObject, "createTime", java.time.LocalDateTime.class, java.time.LocalDateTime.now());
+        this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, now);
         
         // 自动填充创建人
         String currentUser = getCurrentUser();
         this.strictInsertFill(metaObject, "createBy", String.class, currentUser);
         
         // 自动填充更新时间
-        this.strictInsertFill(metaObject, "updateTime", java.time.LocalDateTime.class, java.time.LocalDateTime.now());
+        this.strictInsertFill(metaObject, "updateTime", LocalDateTime.class, now);
         
         // 自动填充更新人
         this.strictInsertFill(metaObject, "updateBy", String.class, currentUser);
@@ -57,8 +60,10 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
      */
     @Override
     public void updateFill(MetaObject metaObject) {
+        LocalDateTime now = LocalDateTime.now();
+        
         // 自动填充更新时间
-        this.strictUpdateFill(metaObject, "updateTime", java.time.LocalDateTime.class, java.time.LocalDateTime.now());
+        this.strictUpdateFill(metaObject, "updateTime", LocalDateTime.class, now);
         
         // 自动填充更新人
         String currentUser = getCurrentUser();
@@ -190,10 +195,24 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
      * @return 当前用户标识（可以是用户ID、openid等）
      */
     private String getCurrentUser() {
-        // TODO: 从请求上下文获取当前用户信息
-        // 例如：从 JWT Token 中解析用户ID或openid
-        // 或者从 ThreadLocal 中获取（需要在拦截器中设置）
-        return "system"; // 默认值，后续可以改为从请求中获取
+        try {
+            // 优先使用用户ID
+            Long userId = org.example.common.util.UserContext.getUserId();
+            if (userId != null) {
+                return userId.toString();
+            }
+            
+            // 如果没有用户ID，使用 openId
+            String openId = org.example.common.util.UserContext.getOpenId();
+            if (openId != null && !openId.isEmpty()) {
+                return openId;
+            }
+        } catch (Exception e) {
+            // 如果获取失败，返回默认值
+        }
+        
+        return "system"; // 默认值（未登录时使用）
     }
+
 }
 

@@ -1,45 +1,53 @@
 package org.example.userservice.controller;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.example.common.result.Result;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.example.common.util.UserContext;
+import org.example.userservice.dto.LoginRequest;
+import org.example.userservice.dto.LoginResponse;
+import org.example.userservice.entity.User;
+import org.example.userservice.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * <p>
  * 小程序用户表 前端控制器
  * </p>
  *
- * @author code-generator
+ * @author 小熊敲敲
  * @since 2025-12-26
  */
+@Api(tags = "用户管理")
 @RestController
 @RequestMapping("/userservice/user")
 public class UserController {
 
-    /**
-     * 示例接口：返回成功响应（无数据）
-     */
-    @GetMapping("/test")
-    public Result<Void> test() {
-        return Result.success();
+    @Autowired
+    private UserService userService;
+
+    @ApiOperation("微信小程序登录/注册")
+    @PostMapping("/login")
+    public Result<LoginResponse> login(@RequestBody LoginRequest request) {
+        LoginResponse response = userService.login(request);
+        return Result.success(response);
     }
 
-    /**
-     * 示例接口：返回成功响应（有数据）
-     */
+    @ApiOperation("获取当前用户信息")
     @GetMapping("/info")
-    public Result<String> getInfo() {
-        String data = "用户信息";
-        return Result.success(data);
-    }
-
-    /**
-     * 示例接口：返回失败响应
-     */
-    @GetMapping("/error")
-    public Result<Void> error() {
-        return Result.fail("操作失败");
+    public Result<User> getUserInfo() {
+        Long userId = UserContext.getUserId();
+        if (userId == null) {
+            return Result.fail(401, "未登录");
+        }
+        User user = userService.getById(userId);
+        if (user == null) {
+            return Result.fail("用户不存在");
+        }
+        // 不返回敏感信息
+        user.setSessionKey(null);
+        return Result.success(user);
     }
 }
 

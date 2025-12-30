@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 /**
  * 启动成功提示
  * 
- * @author user-service
+ * @author 小熊敲敲
  */
 @Component
 public class StartupRunner implements ApplicationListener<ApplicationReadyEvent> {
@@ -26,7 +26,7 @@ public class StartupRunner implements ApplicationListener<ApplicationReadyEvent>
         System.out.println("║                                                              ║");
         System.out.println("║            " + applicationName.toUpperCase() + " 启动成功！                    ║");
         System.out.println("║                                                              ║");
-        System.out.println("║  服务地址: http://localhost:" + port + "                              ║");
+        System.out.println("║  服务地址: http://192.168.1.111:" + port + "                              ║");
         System.out.println("║  服务名称: " + applicationName + "                                    ║");
         System.out.println("║                                                              ║");
         System.out.println("╚══════════════════════════════════════════════════════════════╝");

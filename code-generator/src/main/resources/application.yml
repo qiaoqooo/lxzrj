@@ -6,15 +6,13 @@ server:
 spring:
   application:
     name: code-generator
-  config:
-    import: optional:nacos:code-generator.yml
 
 # 代码生成器配置
 code:
   generator:
     # 数据源配置
     datasource:
-      url: jdbc:mysql://localhost:3306/clouddata?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+      url: jdbc:mysql://localhost:3306/boss_employment?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=Asia/Shanghai
       username: root
       password: root
       driver-class-name: com.mysql.cj.jdbc.Driver

@@ -5,8 +5,15 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import org.example.common.util.JwtUtil;
 import org.example.userservice.dto.LoginRequest;
 import org.example.userservice.dto.LoginResponse;
+import org.example.userservice.dto.UserOverviewDTO;
+import org.example.userservice.entity.FavoriteJob;
+import org.example.userservice.entity.JobApplication;
+import org.example.userservice.entity.Resume;
+import org.example.userservice.entity.ResumeAttachment;
+import org.example.userservice.entity.UserJobPreference;
 import org.example.userservice.entity.User;
-import org.example.userservice.mapper.UserMapper;
+import org.example.userservice.entity.Message;
+import org.example.userservice.mapper.*;
 import org.example.userservice.service.UserService;
 import org.example.userservice.service.WxService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -15,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,20 +42,39 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private JobApplicationMapper jobApplicationMapper;
+
+    @Autowired
+    private FavoriteJobMapper favoriteJobMapper;
+
+    @Autowired
+    private FollowCompanyMapper followCompanyMapper;
+
+    @Autowired
+    private ResumeAttachmentMapper resumeAttachmentMapper;
+
+    @Autowired
+    private UserJobPreferenceMapper userJobPreferenceMapper;
+
+    @Autowired
+    private ResumeMapper resumeMapper;
+
+    @Autowired
+    private MessageMapper messageMapper;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public LoginResponse login(LoginRequest request) {
         // 1. 通过 code 获取 openid 和 session_key
         Map<String, String> wxResult = wxService.code2Session(request.getCode());
         String openId = wxResult.get("openid");
-        String sessionKey = wxResult.get("session_key");
-        String unionId = wxResult.get("unionid");
 
         if (openId == null || openId.isEmpty()) {
             throw new RuntimeException("获取 openid 失败");
         }
 
-        // 2. 根据 openId 查询用户
+        // 2. 根据 openid 查询用户
         User user = this.getOne(new LambdaQueryWrapper<User>().eq(User::getOpenId, openId));
         boolean isNewUser = false;
 
@@ -56,13 +83,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             isNewUser = true;
             user = new User();
             user.setOpenId(openId);
-            user.setUnionId(unionId);
-            user.setSessionKey(sessionKey); // 注意：实际项目中应该加密存储
-            user.setNickName(request.getNickName());
+            user.setNickname(request.getNickName());
             user.setAvatarUrl(request.getAvatarUrl());
-            user.setIsDisabled(false);
-            user.setDelFlag(false);
-            user.setLastLoginTime(LocalDateTime.now());
+            // 默认求职者角色
+            user.setRole("seeker");
             
             // 保存用户
             this.save(user);
@@ -71,12 +95,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             // 使用 UpdateWrapper 更新，避免乐观锁问题
             LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.eq(User::getId, user.getId())
-                    .set(User::getSessionKey, sessionKey)
-                    .set(User::getLastLoginTime, LocalDateTime.now());
+                    ;
             
             // 如果传入了新的昵称或头像，更新
             if (request.getNickName() != null && !request.getNickName().isEmpty()) {
-                updateWrapper.set(User::getNickName, request.getNickName());
+                updateWrapper.set(User::getNickname, request.getNickName());
             }
             if (request.getAvatarUrl() != null && !request.getAvatarUrl().isEmpty()) {
                 updateWrapper.set(User::getAvatarUrl, request.getAvatarUrl());
@@ -94,6 +117,108 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         // 6. 返回登录响应
         return new LoginResponse(token, user, isNewUser);
+    }
+
+    @Override
+    public UserOverviewDTO getUserOverview(Long userId) {
+        User user = this.getById(userId);
+        if (user == null) {
+            return null;
+        }
+
+        UserOverviewDTO dto = new UserOverviewDTO();
+        dto.setNickname(user.getNickname());
+        dto.setAvatarUrl(user.getAvatarUrl());
+        dto.setRole(user.getRole());
+
+        // 在线简历（默认简历）
+        Resume resume = resumeMapper.selectOne(
+                new LambdaQueryWrapper<Resume>()
+                        .eq(Resume::getUserId, userId)
+                        .eq(Resume::getIsDefault, true)
+                        .last("limit 1")
+        );
+        dto.setResumeTitle(resume != null ? resume.getTitle() : "我的在线简历");
+
+        // 职位投递统计
+        Long deliveredCount = jobApplicationMapper.selectCount(
+                new LambdaQueryWrapper<JobApplication>()
+                        .eq(JobApplication::getSeekerId, userId)
+        );
+        dto.setDeliveredCount(deliveredCount);
+
+        Long interviewPendingCount = jobApplicationMapper.selectCount(
+                new LambdaQueryWrapper<JobApplication>()
+                        .eq(JobApplication::getSeekerId, userId)
+                        .eq(JobApplication::getStatus, "interview_pending")
+        );
+        dto.setInterviewPendingCount(interviewPendingCount);
+
+        // 沟通过 = 有过消息往来的独立用户数量
+        List<Message> myMessages = messageMapper.selectList(
+                new LambdaQueryWrapper<Message>()
+                        .eq(Message::getSenderId, userId)
+                        .or()
+                        .eq(Message::getReceiverId, userId)
+        );
+        long communicatedCount = myMessages.stream()
+                .map(m -> java.util.Objects.equals(m.getSenderId(), userId) ? m.getReceiverId() : m.getSenderId())
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .count();
+        dto.setCommunicatedCount(communicatedCount);
+
+        // 收藏职位
+        Long favCount = favoriteJobMapper.selectCount(
+                new LambdaQueryWrapper<FavoriteJob>()
+                        .eq(FavoriteJob::getUserId, userId)
+        );
+        dto.setFavoriteJobCount(favCount);
+
+        // 附件简历数量
+        Long attachCount = resumeAttachmentMapper.selectCount(
+                new LambdaQueryWrapper<ResumeAttachment>()
+                        .eq(ResumeAttachment::getUserId, userId)
+        );
+        dto.setResumeAttachmentCount(attachCount);
+
+        // 求职意向
+        UserJobPreference pref = userJobPreferenceMapper.selectOne(
+                new LambdaQueryWrapper<UserJobPreference>()
+                        .eq(UserJobPreference::getUserId, userId)
+                        .last("limit 1")
+        );
+        if (pref != null) {
+            dto.setJobPreferenceStatusText(pref.getStatusText());
+        }
+
+        return dto;
+    }
+
+    @Override
+    public void switchRole(Long userId, String role) {
+        if (userId == null || role == null) {
+            return;
+        }
+        // 只允许在 seeker / recruiter 之间切换
+        if (!"seeker".equals(role) && !"recruiter".equals(role)) {
+            return;
+        }
+        LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(User::getId, userId)
+                .set(User::getRole, role);
+        this.update(wrapper);
+    }
+
+    @Override
+    public void updateNickname(Long userId, String nickname) {
+        if (userId == null || nickname == null || nickname.trim().isEmpty()) {
+            return;
+        }
+        LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(User::getId, userId)
+                .set(User::getNickname, nickname.trim());
+        this.update(wrapper);
     }
 }
 

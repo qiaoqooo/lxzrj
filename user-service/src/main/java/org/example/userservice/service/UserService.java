@@ -2,6 +2,7 @@ package org.example.userservice.service;
 
 import org.example.userservice.dto.LoginRequest;
 import org.example.userservice.dto.LoginResponse;
+import org.example.userservice.dto.UserOverviewDTO;
 import org.example.userservice.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -22,5 +23,20 @@ public interface UserService extends IService<User> {
      * @return 登录响应（包含 token 和用户信息）
      */
     LoginResponse login(LoginRequest request);
+
+    /**
+     * 个人主页概览数据（我的页面顶部统计）
+     */
+    UserOverviewDTO getUserOverview(Long userId);
+
+    /**
+     * 切换当前用户角色（seeker / recruiter）
+     */
+    void switchRole(Long userId, String role);
+
+    /**
+     * 更新当前用户昵称
+     */
+    void updateNickname(Long userId, String nickname);
 }
 

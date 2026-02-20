@@ -3,27 +3,14 @@ spring:
     name: user-service
   profiles:
     active: dev
-  config:
-    import: optional:nacos:user-service-${spring.profiles.active}.yml
   cloud:
     nacos:
-      discovery:
-        server-addr: localhost:8848
-        namespace: public
-        group: DEFAULT_GROUP
-        # 启用失败容忍，允许 Nacos 不可用时继续启动
-        failure-tolerance-enabled: true
-        # 注册失败时是否快速失败（false 表示不快速失败，允许继续启动）
-        fail-fast: false
       config:
-        server-addr: localhost:8848
-        namespace: public
-        group: DEFAULT_GROUP
-        file-extension: yml
         import-check:
           enabled: false
-        shared-configs:
-          - data-id: common-config.yml
-            group: DEFAULT_GROUP
-            refresh: true
-
+      discovery:
+        enabled: false
+        register-enabled: false
+    service-registry:
+      auto-registration:
+        enabled: false

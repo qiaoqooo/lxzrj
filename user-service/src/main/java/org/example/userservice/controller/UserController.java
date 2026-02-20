@@ -6,6 +6,7 @@ import org.example.common.result.Result;
 import org.example.common.util.UserContext;
 import org.example.userservice.dto.LoginRequest;
 import org.example.userservice.dto.LoginResponse;
+import org.example.userservice.dto.UserOverviewDTO;
 import org.example.userservice.entity.User;
 import org.example.userservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,9 +46,49 @@ public class UserController {
         if (user == null) {
             return Result.fail("用户不存在");
         }
-        // 不返回敏感信息
-        user.setSessionKey(null);
         return Result.success(user);
+    }
+
+    @ApiOperation("当前用户-个人主页概览（我的页面顶部统计）")
+    @GetMapping("/overview")
+    public Result<UserOverviewDTO> getOverview() {
+        Long userId = UserContext.getUserId();
+        if (userId == null) {
+            return Result.fail(401, "未登录");
+        }
+        UserOverviewDTO dto = userService.getUserOverview(userId);
+        if (dto == null) {
+            return Result.fail("用户不存在");
+        }
+        return Result.success(dto);
+    }
+
+    @ApiOperation("切换当前用户角色（seeker / recruiter）")
+    @PostMapping("/switch-role")
+    public Result<Void> switchRole(@RequestParam("role") String role) {
+        Long userId = UserContext.getUserId();
+        if (userId == null) {
+            return Result.fail(401, "未登录");
+        }
+        userService.switchRole(userId, role);
+        return Result.success();
+    }
+
+    @ApiOperation("修改当前用户昵称")
+    @PostMapping("/update-nickname")
+    public Result<Void> updateNickname(@RequestParam("nickname") String nickname) {
+        Long userId = UserContext.getUserId();
+        if (userId == null) {
+            return Result.fail(401, "未登录");
+        }
+        if (nickname == null || nickname.trim().isEmpty()) {
+            return Result.fail(400, "昵称不能为空");
+        }
+        if (nickname.length() > 20) {
+            return Result.fail(400, "昵称长度不能超过20个字符");
+        }
+        userService.updateNickname(userId, nickname.trim());
+        return Result.success();
     }
 }
 

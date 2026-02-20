@@ -33,15 +33,17 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
     public void insertFill(MetaObject metaObject) {
         LocalDateTime now = LocalDateTime.now();
         
-        // 自动填充创建时间
+        // 自动填充创建时间（兼容 createTime / createdAt 两种命名）
         this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, now);
+        this.strictInsertFill(metaObject, "createdAt", LocalDateTime.class, now);
         
         // 自动填充创建人
         String currentUser = getCurrentUser();
         this.strictInsertFill(metaObject, "createBy", String.class, currentUser);
         
-        // 自动填充更新时间
+        // 自动填充更新时间（兼容 updateTime / updatedAt 两种命名）
         this.strictInsertFill(metaObject, "updateTime", LocalDateTime.class, now);
+        this.strictInsertFill(metaObject, "updatedAt", LocalDateTime.class, now);
         
         // 自动填充更新人
         this.strictInsertFill(metaObject, "updateBy", String.class, currentUser);
@@ -89,8 +91,9 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
     public void updateFill(MetaObject metaObject) {
         LocalDateTime now = LocalDateTime.now();
         
-        // 自动填充更新时间
+        // 自动填充更新时间（兼容 updateTime / updatedAt 两种命名）
         this.strictUpdateFill(metaObject, "updateTime", LocalDateTime.class, now);
+        this.strictUpdateFill(metaObject, "updatedAt", LocalDateTime.class, now);
         
         // 自动填充更新人
         String currentUser = getCurrentUser();

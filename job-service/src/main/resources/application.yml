@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: job-service
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      config:
+        import-check:
+          enabled: false
+      discovery:
+        enabled: false
+        register-enabled: false
+    service-registry:
+      auto-registration:
+        enabled: false

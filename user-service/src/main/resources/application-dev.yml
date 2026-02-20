@@ -5,28 +5,13 @@ spring:
   # 数据源配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/clouddata?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://localhost:3306/boss_employment?useUnicode=true&useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
     username: root
     password: root
-  cloud:
-    nacos:
-      discovery:
-        server-addr: localhost:8848
-        namespace: public
-        group: DEFAULT_GROUP
-        # 启用失败容忍，允许 Nacos 不可用时继续启动
-        failure-tolerance-enabled: true
-        # 注册失败时是否快速失败（false 表示不快速失败，允许继续启动）
-        fail-fast: false
-      config:
-        server-addr: localhost:8848
-        namespace: public
-        group: DEFAULT_GROUP
-        file-extension: yml
-        shared-configs:
-          - data-id: common-config.yml
-            group: DEFAULT_GROUP
-            refresh: true
+
+upload:
+  # 附件简历保存目录，使用绝对路径，避免指向 Tomcat 临时目录
+  resume-dir: D:/JavaProject/m_boss直聘/lxzrj/uploads/resume
 
 # MyBatis-Plus 配置
 mybatis-plus:
@@ -56,4 +41,10 @@ logging:
     org.example.userservice.mapper: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n"
+
+wx:
+  appid: wx303eb92896ac958f
+  secret: 4d2cc98b291990d53a9e0dcb1a86c520
+  # 关闭测试模式，使用微信真实登录
+  test-mode: false
 

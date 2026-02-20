@@ -4,32 +4,28 @@ server:
 spring:
   cloud:
     gateway:
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
       routes:
-        # 用户服务路由
+        # 用户服务路由（通过 /api/userservice/** 访问，开发环境直连 8082）
         - id: user-service
-          uri: lb://user-service
+          uri: http://localhost:8082
           predicates:
-            - Path=/api/user/**
+            - Path=/api/userservice/**
           filters:
             - StripPrefix=1
-    nacos:
-      discovery:
-        server-addr: localhost:8848
-        namespace: public
-        group: DEFAULT_GROUP
-        # 启用失败容忍，允许 Nacos 不可用时继续启动
-        failure-tolerance-enabled: true
-        # 注册失败时是否快速失败（false 表示不快速失败，允许继续启动）
-        fail-fast: false
-      config:
-        server-addr: localhost:8848
-        namespace: public
-        group: DEFAULT_GROUP
-        file-extension: yml
+        # 职位服务路由
+        - id: job-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/job/**
+          filters:
+            - StripPrefix=1
+        # 公司服务路由（与 job-service 同一个应用，只是单独映射前缀方便前端调用）
+        - id: company-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/company/**
+          filters:
+            - StripPrefix=1
 
 # 日志配置
 logging:
